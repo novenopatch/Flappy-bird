@@ -9,3 +9,4 @@ class Pipe(pygame.sprite.Sprite):
         else:
             self.image = pygame.transform.scale2x(
                 pygame.image.load('assets/images/pipe/pipe-red.png').convert_alpha())
+        #self.image = pygame.transform.scale2x(pygame.image.load('assets/images/pipe/pipe-green.png').convert_alpha())

@@ -1,4 +1,4 @@
-import pygame, random
+import pygame, random,sys
 from Bird import Bird
 from Floor import Floor
 from Pipe import Pipe
@@ -9,24 +9,37 @@ from Score import  Score
 from Level import Level
 
 class Game():
-    def __init__(self, screen: pygame.Surface,levels:list[Level]):
-        self.screen: pygame.Surface = screen
-        self.screen_width: int = screen.get_width()
-        self.screen_height: int = screen.get_height()
+    def __init__(self):
+        pygame.init()
+        info = pygame.display.Info()
+        w = info.current_w
+        h = info.current_h
+        print(h,w)
+        #pg.display.set_mode((int(w * 0.8), int(h * 0.8)))
+        self.screen: pygame.Surface = self.render_surface()
+        self.screen_width: int = self.screen.get_width()
+        self.screen_height: int = self.screen.get_height()
         self.game_font: pygame.font.Font = pygame.font.Font("assets/font/Pixeled.ttf", 20)
         self.game_state:GameState  = GameState.IS_PAUSE
         self.current_level_int:int = 1
-        self.levels:list[Level] = levels
+        self.levels:list[Level] = [
+        Level("Level 1",40, GameBackground.DAY, BirdColor.BLUE, PipeColor.GREEN),
+        Level("Level 2", 80, GameBackground.DAY, BirdColor.BLUE, PipeColor.RED),
+        Level("Level 3", 100, GameBackground.DAY, BirdColor.BLUE, PipeColor.GREEN),
+        Level("Level 4", 120, GameBackground.NIGHT, BirdColor.RED, PipeColor.GREEN),
+        Level("Level 5", 150, GameBackground.DAY, BirdColor.YELLOW, PipeColor.RED),
+        Level("Level 6", 160, GameBackground.NIGHT, BirdColor.RED, PipeColor.RED),
+    ]
         self.current_level:Level = self.levels[self.current_level_int-1]
-        self.bird_sprite: Bird = Bird(screen,self.current_level.bird_frames)
+        self.bird_sprite: Bird = Bird(self.screen,self.current_level.bird_frames)
         self.bg: pygame.Surface = self.current_level.BG
         self.pipe_height: list[int] = self.current_level.PIPE_HEIGHT_LIST
         self.pipe_spacing: int = self.current_level.PIPE_SPACING
 
         self.bird: pygame.sprite.GroupSingle = pygame.sprite.GroupSingle(self.bird_sprite)
 
-        self.game_starting: pygame.Surface = pygame.transform.scale2x(
-            pygame.image.load('assets/images/message.png').convert_alpha())
+        self.game_starting: pygame.Surface = pygame.transform.scale(
+            pygame.image.load('assets/images/message.png').convert_alpha(),(self.screen_width/3,self.screen_height/3))
 
         self.game_over = pygame.transform.scale2x(
             pygame.image.load('assets/images/gameover.png').convert_alpha())
@@ -34,7 +47,7 @@ class Game():
             center=(self.screen_width / 2, self.screen_height / 2))
         self.game_starting_rect: pygame.Rect = self.game_starting.get_rect(
             center=(self.screen_width / 2, self.screen_height / 2))
-        self.floor: Floor = Floor(screen)
+        self.floor: Floor = Floor(self.screen)
         self.save:Save = Save()
         self.score: int = self.save.get_data(SaveData.SCORE)
         self.high_score: int = self.save.get_data(SaveData.HIGH_SCORE)
@@ -44,6 +57,64 @@ class Game():
         self.pipe_starting_pos_x: int = 700
         self.score_sound_countdown: int = 200
         self.sounds_manager: SoundManager = SoundManager()
+        self.SPAWN_PIPE = pygame.USEREVENT
+        self.BIRDFLAP = pygame.USEREVENT + 1
+        pygame.time.set_timer(self.BIRDFLAP, self.current_level.BIRD_FLAP_TIME)
+        pygame.time.set_timer(self.SPAWN_PIPE, self.current_level.SPAWN_PIPE_TIME)
+        self.clock = pygame.time.Clock()
+        self.frame_rate = 120
+        self.display_surface()
+
+    def render_surface(self)->pygame.Surface:
+        screen_width = 576
+        screen_height = 1024
+        return pygame.display.set_mode((screen_width, screen_height))
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.save.save_data()
+                pygame.quit()
+                sys.exit()
+            # if event.type == pygame.KEYDOWN and event.type == pygame.KEYUP: game.game_state = GameState.IS_PAUSE
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.onclick()
+            if event.type == pygame.FINGERDOWN:
+                self.onclick()
+            if event.type == self.SPAWN_PIPE:
+                self.spawn_pipes()
+            if event.type == self.BIRDFLAP:
+                self.bird.sprite.on_event_bird_flap()
+        #return True
+
+    def onclick(self):
+        if self.game_state == GameState.IS_PLAYING:
+            self.bird.sprite.update_movement()
+            self.sounds_manager.play(Sounds.FLAP)
+        elif self.game_state == GameState.IS_GAME_OVER or self.game_state == GameState.IS_PAUSE:
+            self.remake_game()
+
+    def display_surface(self):
+        #screen = pygame.display.get_surface()
+        going = True
+        while going:
+            self.handle_events()
+            self.screen.blit(self.bg, (0, 0))
+            if self.game_state == GameState.IS_PLAYING:
+                self.run()
+            elif self.game_state == GameState.IS_GAME_OVER:
+                self.update_screen_on_over_game()
+            elif self.game_state == GameState.IS_PAUSE:
+                self.update_screen_on_pause_game()
+            elif self.game_state == GameState.IS_END_LEVEl_AND_GO_TO_NEXT_LEVEL:
+                self.update_screen_on_start_new_level()
+                pygame.time.set_timer(self.BIRDFLAP, self.current_level.BIRD_FLAP_TIME)
+                pygame.time.set_timer(self.SPAWN_PIPE, self.current_level.SPAWN_PIPE_TIME)
+                self.screen.blit(self.bg, (0, 0))
+
+            self.update_floor_position()
+            pygame.display.update()
+            self.clock.tick(self.frame_rate)
 
     def run(self):
         self.bird.sprite.draw()
@@ -158,4 +229,7 @@ class Game():
     def spawn_pipes(self):
         self.pipes.extend(self.create_pipe())
 
+
+if __name__ == '__main__':
+    game = Game()
 
