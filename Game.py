@@ -19,8 +19,7 @@ class Game():
         w = info.current_w
         h = info.current_h
 
-        print(
-            f"default screen_width {500} and screen_height {1000} ratio= {500 / 1000},my screnn width {w} and height {h} and ratio = {w / h}")
+       # print(f"default screen_width {500} and screen_height {1000} ratio= {500 / 1000},my screnn width {w} and height {h} and ratio = {w / h}")
         self.render_surface(w, h)
         self.game_font: pygame.font.Font = pygame.font.Font("assets/font/Pixeled.ttf", 20)
         self.game_state: GameState = GameState.IS_PAUSE
@@ -78,7 +77,7 @@ class Game():
 
     def display_fps(self):
 
-        caption = "{} - FPS: {:.0f}/{} and scren info ({},{}".format("Flappy", self.clock.get_fps(), self.frame_rate,
+        caption = "Hello {} {}- FPS:({:.0f}/{}) and screen info ({},{})".format(os.getlogin(),"Flappy Bird", self.clock.get_fps(), self.frame_rate,
                                                                      self.screen.get_width(), self.screen.get_height())
         pygame.display.set_caption(caption)
 
@@ -127,7 +126,7 @@ class Game():
 
     def display_surface(self):
         # screen = pygame.display.get_surface()
-        print(self.pipe_height)
+        #print(self.pipe_height)
         going = True
         while going:
             self.handle_events()
@@ -199,7 +198,7 @@ class Game():
         if self.score >= self.current_level.high_score and self.current_level_int < len(self.levels):
             self.current_level_int += 1
             self.game_state = GameState.IS_END_LEVEl_AND_GO_TO_NEXT_LEVEL
-            print(self.current_level_int)
+            #print(self.current_level_int)
 
         return self.score, self.high_score
 
@@ -231,7 +230,7 @@ class Game():
 
     def create_pipe(self) -> tuple:
         pipe_pos = random.choice(self.pipe_height)
-        print(pipe_pos)
+        #print(pipe_pos)
         bottom_pipe = self.pipe.image.get_rect(midtop=(self.pipe_starting_pos_x, pipe_pos))
         top_pipe = self.pipe.image.get_rect(midbottom=(self.pipe_starting_pos_x, pipe_pos - self.pipe_spacing))
         return bottom_pipe, top_pipe
