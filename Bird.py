@@ -36,7 +36,7 @@ class Bird(pygame.sprite.Sprite):
 
     def bird_animation(self):
         self.image = self.bird_frames[self.bird_index]
-        self.rect = self.image.get_rect(center=((self.screen.get_width() - 76) / 5, self.rect.centery))
+        self.rect = self.image.get_rect(center=(self.screen.get_width() / 5, self.rect.centery))
 
     def on_event_bird_flap(self):
         if self.bird_index < 2:

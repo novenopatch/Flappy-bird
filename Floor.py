@@ -7,6 +7,7 @@ class Floor(pygame.sprite.Sprite):
         self.screen = screen
         self.image = pygame.image.load('assets/images/floor/base.png').convert_alpha()
         self.image = pygame.transform.scale2x(self.image)
+        #self.rect = self.image.get_rect()
         self.position_x = 0
 
     def draw(self):

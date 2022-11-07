@@ -7,17 +7,17 @@ from Pipe import Pipe
 
 class Level():
     def __init__(self, name: str,
-                 high_score:int,
+                 high_score: int,
                  bg_color: GameBackground,
                  bird_color: BirdColor,
                  pipe_color: PipeColor,
-                 pipe_height_list=None,
+                 pipe_height_list: list[int | None] = None,
                  bird_flap_time: int = 200, spawn_pipe_time: int = 1200,
                  pipe_spacing: int = 300):
         self.name = name
         self.high_score = high_score
         if pipe_height_list is None:
-            pipe_height_list = [400, 600, 800]
+            pipe_height_list = [400, 500,600, 700,800]
         self.BG: pygame.Surface = self.get_bg_surface(bg_color)
         self.BIRD_FLAP_TIME: int = bird_flap_time
         self.SPAWN_PIPE_TIME: int = spawn_pipe_time
